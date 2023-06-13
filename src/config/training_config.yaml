@@ -1,0 +1,21 @@
+data: 
+  training:
+    metadata_file : train_output.csv
+    data_dir : train_input/resnet_features/
+    save_dir : /data/data/saved_models/
+    test_data_dir : test_input/resnet_features
+
+
+    epochs : 200
+    lr : 0.0001
+    batch_size : 64
+    n_monte_carlo : 100
+
+    tensorboard:
+      use_tensorboard: True
+      tensorboard_writer: "/data/data/saved_models/runs/experiment_1"
+
+    saved_model : /data/data/saved_models/best_model_11_04.pt
+
+submission:
+  path_csv : /data/data/saved_models/submission.csv
