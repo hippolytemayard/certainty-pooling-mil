@@ -1,21 +1,23 @@
 data: 
+  split : 0.2
   training:
     metadata_file : train_output.csv
     data_dir : train_input/resnet_features/
-    save_dir : /data/data/saved_models/
+    save_dir : /data/data/saved_models/experiment_4/
     test_data_dir : test_input/resnet_features
 
 
-    epochs : 200
-    lr : 0.0001
-    batch_size : 64
-    n_monte_carlo : 100
+    epochs : 300
+    lr : 0.001
+    batch_size : 128
+    n_monte_carlo : 150
 
     tensorboard:
       use_tensorboard: True
-      tensorboard_writer: "/data/data/saved_models/runs/experiment_1"
+      tensorboard_writer: "/data/data/saved_models/runs/experiment_4"
 
-    saved_model : /data/data/saved_models/best_model_11_04.pt
+    saved_model : best_model_13_06.pt
+    previous_model : null #/data/data/saved_models/experiment_2/best_model_13_06.pt
 
 submission:
-  path_csv : /data/data/saved_models/submission.csv
+  path_csv : /data/data/saved_models/submission_3.csv

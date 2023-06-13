@@ -52,8 +52,8 @@ def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tu
     predictions = np.concatenate(predictions_list).ravel()
     y_val = np.concatenate(target_list).ravel()
 
-    print(predictions.shape)
-    print(y_val.shape)
+    # print(predictions.shape)
+    # print(y_val.shape)
 
     fpr, tpr, thresholds = metrics.roc_curve(y_val, predictions)
     auc = metrics.auc(fpr, tpr)

@@ -1,0 +1,1 @@
+poetry run python src/models/main.py --config-path /data/code/certainty-pooling-mil/src/config/training_config2.yaml
