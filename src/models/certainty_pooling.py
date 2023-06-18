@@ -30,14 +30,15 @@ def certainty_pooling(model: nn.Module, x: np.ndarray, n: int, device, epsilon: 
     h = model(input)
 
     model.train()
-    mc_dropout = []
     model = model.to(device)
 
-    for i in range(n):
-        output = model(input)
-        mc_dropout.append(output.squeeze(-1).cpu().detach().numpy())
+    # TODO: faster training
+    # for i in range(n):
+    #    output = model(input)
+    #    mc_dropout.append(output.squeeze(-1).cpu().detach().numpy())
 
-    mc_dropout = np.asarray(mc_dropout)
+    mc_dropout = np.asarray([model(input).squeeze(-1).cpu().detach().numpy() for _ in range(n)])
+
     std_vector = 1 / (np.std(mc_dropout, axis=0) + epsilon)
 
     certainty_weighted_output = deepcopy(h.cpu().detach().numpy())

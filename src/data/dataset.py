@@ -49,3 +49,24 @@ class bag_dataset_test(Dataset):
         # print(x.shape)
 
         return x
+
+
+class tiles_dataset(Dataset):
+    def __init__(self, list_id, tile_df, data_root, random_selection=False):
+        self.list_id = list_id
+        self.df = tile_df
+        self.random_selection = random_selection
+        self.data_root = data_root
+
+    def __len__(self):
+        return len(self.list_id)
+
+    def __getitem__(self, idx):
+        path = self.data_root / str(self.list_id[idx] + "_annotated.npy")
+        data = np.load(path)
+
+        x = data[:, 3:]
+
+        target = self.df[self.df.ID == self.list_id[idx]].Target.to_list()
+
+        return x, target
