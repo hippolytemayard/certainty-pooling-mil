@@ -18,7 +18,7 @@ from src.utils.utils import collate_fn, load_yaml
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config-path")
+    parser.add_argument("-c", "--config-path", default=CONFIG_PATH)
     args = parser.parse_args()
 
     config = load_yaml(path=args.config_path)
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     best_model = None
 
     for epoch in tqdm(range(epochs)):
-        running_loss = train_loop(train_pooling_loader, model, criterion, optimizer, epoch, device, n=100)
+        running_loss = train_loop(train_pooling_loader, model, criterion, optimizer, epoch, device, n=n)
 
         auc, acc, recall, precision = evaluation(model, validation_pooling_loader, device)
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
             writer.add_scalar("recall", recall, epoch)
             writer.add_scalar("precision", precision, epoch)
 
-        if auc >= best_auc and acc > best_accuracy:
+        if auc >= best_auc and acc >= best_accuracy:
             best_auc = auc
             best_accuracy = acc
 

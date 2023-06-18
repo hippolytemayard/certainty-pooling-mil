@@ -1,4 +1,3 @@
-import argparse
 import shutil
 from pathlib import Path
 
@@ -23,7 +22,9 @@ if __name__ == "__main__":
 
     data_root = DATA_PATH / config.data.training.test_data_dir
     save_path = Path(config.data.training.save_dir)
-    save_model_path = save_path / config.data.training.saved_model
+    # save_model_path = save_path / config.data.training.saved_model
+    # print(config.submission)
+    save_model_path = config.submission.model_path
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -38,6 +39,8 @@ if __name__ == "__main__":
 
     best_model_state_dict = torch.load(save_model_path)
     best_model.load_state_dict(best_model_state_dict["model_state_dict"])
+
+    n = config.data.training.n_monte_carlo
 
     predictions = []
     predictions_list = []
@@ -54,7 +57,7 @@ if __name__ == "__main__":
                 print(f"len input : {len(input)}")
                 print(f"shape input : {input.shape}")
                 # a
-                certainty_pooling_ = certainty_pooling(model=best_model, x=input, n=100, device=device, epsilon=1.0e-3)
+                certainty_pooling_ = certainty_pooling(model=best_model, x=input, n=n, device=device, epsilon=1.0e-3)
 
                 inputs_pooling.append(certainty_pooling_)
 
@@ -68,13 +71,11 @@ if __name__ == "__main__":
         predictions_list.append(outputs.cpu().detach().numpy())
         del inputs, inputs_pooling, certainty_pooling_, inputs_
 
-        # predictions.append(outputs.cpu().detach().numpy())
-        # print(outputs.cpu().detach().numpy())
-
     # predictions = np.concatenate(predictions, axis=0)
     predictions = np.concatenate(predictions_list).ravel()
     print(len(predictions), predictions.shape)
     print(len(list_id_test))
     df_predictions = pd.DataFrame(data={"ID": [i[-3:] for i in list_id_test], "Target": predictions.tolist()})
+    df_predictions = df_predictions.sort_values(by="ID")
     print(df_predictions)
     df_predictions.to_csv(config.submission.path_csv, index=False)
