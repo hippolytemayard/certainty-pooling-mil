@@ -1,6 +1,9 @@
 from typing import Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sn
 import torch
 import torch.nn as nn
 from sklearn import metrics
@@ -60,8 +63,8 @@ def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tu
     predictions[predictions >= threshold] = 1
     predictions[predictions < threshold] = 0
 
-    confusion_mat = confusion_matrix(y_val, predictions)
-    tn, fp, fn, tp = confusion_mat.ravel()
+    cf_matrix = confusion_matrix(y_val, predictions)
+    tn, fp, fn, tp = cf_matrix.ravel()
 
     recall = tp / (tp + fn)
     precision = tp / (tp + fp)
@@ -69,9 +72,13 @@ def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tu
 
     print(f"\nAUC : {auc} , accuracy : {accuracy} , reccall = {recall} , precision = {precision}\n")
 
-    print(confusion_mat)
+    print(cf_matrix)
 
-    return auc, accuracy, recall, precision
+    df_cm = pd.DataFrame(cf_matrix, index=["gt 0", "gt 1"], columns=["pred 0", "pred 1"])
+    plt.figure(figsize=(12, 7))
+    fig = sn.heatmap(df_cm, annot=True).get_figure()
+
+    return auc, accuracy, recall, precision, fig
 
 
 def evaluation_tile(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tuple[int]:
@@ -110,7 +117,8 @@ def evaluation_tile(model: nn.Module, loader: DataLoader, device, n: int = 100) 
             target_list.append(targets.cpu().detach().numpy())
             predictions_list.append(outputs.cpu().detach().numpy())
 
-    predictions = np.concatenate(predictions_list).ravel()
+    # print(len(predictions_list))
+    predictions = np.concatenate(predictions_list, axis=1).ravel()
     y_val = np.concatenate(target_list).ravel()
 
     fpr, tpr, thresholds = metrics.roc_curve(y_val, predictions)
@@ -120,8 +128,8 @@ def evaluation_tile(model: nn.Module, loader: DataLoader, device, n: int = 100) 
     predictions[predictions >= threshold] = 1
     predictions[predictions < threshold] = 0
 
-    confusion_mat = confusion_matrix(y_val, predictions)
-    tn, fp, fn, tp = confusion_mat.ravel()
+    cf_matrix = confusion_matrix(y_val, predictions)
+    tn, fp, fn, tp = cf_matrix.ravel()
 
     recall = tp / (tp + fn)
     precision = tp / (tp + fp)
@@ -130,6 +138,10 @@ def evaluation_tile(model: nn.Module, loader: DataLoader, device, n: int = 100) 
     print(
         f"\nAUC_instance : {auc} , accuracy_instance : {accuracy} , reccall_instance = {recall} , precision_instance = {precision}\n"
     )
-    print(confusion_mat)
+    print(cf_matrix)
 
-    return auc, accuracy, recall, precision
+    df_cm = pd.DataFrame(cf_matrix, index=["gt 0", "gt 1"], columns=["pred 0", "pred 1"])
+    plt.figure(figsize=(12, 7))
+    fig = sn.heatmap(df_cm, annot=True).get_figure()
+
+    return auc, accuracy, recall, precision, fig

@@ -29,12 +29,12 @@ def single_training(train_loader, validation_loader, validation_loader_tile, con
     criterion = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    if config.data.training.previous_model is not None:
-        print("LOADING CHECKPOINTS")
-        state_dict = torch.load("/data/data/saved_models/experiment_10/model3461.pt")
-        model.load_state_dict(state_dict["model_state_dict"])
-        optimizer.load_state_dict(state_dict["optimizer_state_dict"])
-        optimizer.param_groups[0]["lr"] = 0.0001
+    # if config.data.training.previous_model is not None:
+    #    print("LOADING CHECKPOINTS")
+    #    state_dict = torch.load("/data/data/saved_models/experiment_10/model3461.pt")
+    #    model.load_state_dict(state_dict["model_state_dict"])
+    #    optimizer.load_state_dict(state_dict["optimizer_state_dict"])
+    #    optimizer.param_groups[0]["lr"] = 0.0001
 
     n = config.data.training.n_monte_carlo
 
@@ -43,10 +43,13 @@ def single_training(train_loader, validation_loader, validation_loader_tile, con
     for epoch in tqdm(range(epochs)):
         running_loss = train_loop(train_loader, model, criterion, optimizer, epoch, device, n=n)
 
-        auc, acc, recall, precision = evaluation(model, validation_loader, device)
-        auc_tile, acc_tile, recall_tile, precision_tile = evaluation_tile(
-            model=model, loader=validation_loader_tile, n=n, device=device
-        )
+        auc, acc, recall, precision, fig_bag = evaluation(model, validation_loader, device)
+
+        if validation_loader_tile is not None:
+            print("test", validation_loader_tile)
+            auc_tile, acc_tile, recall_tile, precision_tile, fig_tile = evaluation_tile(
+                model=model, loader=validation_loader_tile, n=n, device=device
+            )
 
         if config_tensorboard.use_tensorboard:
             writer.add_scalar("training loss", running_loss, epoch)
@@ -54,16 +57,23 @@ def single_training(train_loader, validation_loader, validation_loader_tile, con
             writer.add_scalar("accuracy", acc, epoch)
             writer.add_scalar("recall", recall, epoch)
             writer.add_scalar("precision", precision, epoch)
-            writer.add_scalar("auc_tile", auc_tile, epoch)
-            writer.add_scalar("accuracy_tile", acc_tile, epoch)
-            writer.add_scalar("recall_tile", recall_tile, epoch)
-            writer.add_scalar("precision_tile", precision_tile, epoch)
+            writer.add_figure("Confusion matrix", fig_bag, epoch)
+            if validation_loader_tile is not None:
+                writer.add_scalar("auc_tile", auc_tile, epoch)
+                writer.add_scalar("accuracy_tile", acc_tile, epoch)
+                writer.add_scalar("recall_tile", recall_tile, epoch)
+                writer.add_scalar("precision_tile", precision_tile, epoch)
+                writer.add_figure("Confusion matrix", fig_tile, epoch)
 
-        if auc >= best_auc:
+        if auc >= best_auc and acc >= best_accuracy:
             best_auc = auc
+            best_accuracy = acc
 
             print("SAVING MODEL AUC")
-            print(f"BEST ACCURACY = {acc}, BEST AUC TILE = {auc_tile} , BEST AUC : {best_auc}")
+            if validation_loader_tile is not None:
+                print(f"BEST ACCURACY = {acc}, BEST AUC TILE = {auc_tile} , BEST AUC : {best_auc}")
+            else:
+                print(f"BEST ACCURACY = {acc}, BEST AUC : {best_auc}")
 
             torch.save(
                 obj={
@@ -71,12 +81,14 @@ def single_training(train_loader, validation_loader, validation_loader_tile, con
                     "optimizer_state_dict": optimizer.state_dict(),
                     "auc": auc,
                     "acc": acc,
-                    "auc_tile": auc_tile,
-                    "acc_tile": acc_tile,
+                    "confusion_matrix": fig_bag
+                    # "auc_tile": auc_tile,
+                    # "acc_tile": acc_tile,
                 },
                 f=save_model_path,
             )
 
+        """
         if auc_tile >= best_auc_tile:
             best_auc_tile = auc_tile
 
@@ -94,6 +106,7 @@ def single_training(train_loader, validation_loader, validation_loader_tile, con
                 },
                 f=save_model_path.parent / "model_auc_tile.pt",
             )
+        """
 
     if config_tensorboard.use_tensorboard:
         writer.close()

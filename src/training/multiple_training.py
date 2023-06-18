@@ -20,7 +20,6 @@ if __name__ == "__main__":
 
     metadata_file = DATA_PATH / config.data.training.metadata_file
     meta_data_file_tile = DATA_PATH / config.data.training.metadata_file_tile
-    meta_data_file_tile = DATA_PATH / config.data.training.metadata_file_tile
 
     tile_df = pd.read_csv(meta_data_file_tile)
     tile_df["ID"] = tile_df.iloc[:, 0].str[:6]

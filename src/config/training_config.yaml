@@ -1,26 +1,26 @@
 data: 
   split : 0.3
   training:
-    experiment: 14
+    experiment: 16
     metadata_file : train_output.csv
     metadata_file_tile : train_input/train_tile_annotations.csv
     data_dir : train_input/resnet_features/
-    save_dir : /data/data/saved_models/experiment_15/
+    save_dir : /data/data/saved_models/experiment_16/
     test_data_dir : test_input/resnet_features
 
 
-    epochs : 300
+    epochs : 150
     lr : 0.001
-    batch_size : 64
-    n_monte_carlo : 500
+    batch_size : 128
+    n_monte_carlo : 50
 
     tensorboard:
       use_tensorboard: True
-      tensorboard_writer: "/data/data/saved_models/runs/experiment_15"
+      tensorboard_writer: "/data/data/saved_models/runs/experiment_16"
 
-    saved_model : best_model_15_06.pt
-    previous_model : null #/data/data/saved_models/experiment_2/best_model_15_06.pt
+    saved_model : best_model_16_06.pt
+    previous_model : null #/data/data/saved_models/experiment_2/best_model_16_06.pt
 
 submission:
-  model_path : /data/data/saved_models/experiment_15/model2.pt #/data/data/saved_models/experiment_7/model_fold3.pt
-  path_csv : /data/data/saved_models/experiment_15/double_auc_15_nmc_300.csv
+  model_path : /data/data/saved_models/experiment_16/model_fold1.pt #/data/data/saved_models/experiment_7/model_fold3.pt
+  path_csv : /data/data/saved_models/experiment_16/double_auc_16_nmc_300.csv
