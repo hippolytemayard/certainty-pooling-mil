@@ -21,6 +21,8 @@ numpy = "1.23.5"
 pandas = "^2.0.2"
 scikit-learn = "^1.2.2"
 seaborn = "^0.12.2"
+jupyter = "^1.0.0"
+notebook = "^6.5.4"
 
 [tool.black]
 line-length = 120
