@@ -31,9 +31,7 @@ if __name__ == "__main__":
 
         test_ds = bag_dataset_test(list_id=list_id_test, data_root=data_root)
         # print(f"len dataset : {len(test_ds)}")
-        test_loader = DataLoader(
-            test_ds, batch_size=128, shuffle=False, num_workers=0, collate_fn=collate_fn_submission
-        )
+        test_loader = DataLoader(test_ds, batch_size=64, shuffle=False, num_workers=1, collate_fn=collate_fn_submission)
 
         best_model = Paper_network(input_size=2048, dropout=0.5)
         best_model = best_model.to(device)

@@ -1,29 +1,29 @@
 data: 
   split : 0.3
   training:
-    experiment: 27
+    experiment: 31
     metadata_file : train_output.csv
     metadata_file_tile : train_input/train_tile_annotations.csv
     data_dir : train_input/resnet_features/
-    save_dir : /data/ubuntu/data/saved_models/experiment_27/
+    save_dir : /data/ubuntu/data/saved_models/experiment_31/
     test_data_dir : test_input/resnet_features
 
 
-    number_training : 5
-    epochs : 150
+    number_training : 30
+    epochs : 100
     lr : 0.0001
-    batch_size : 32
+    batch_size : 128
     n_monte_carlo : 100
     scheduler : False
-    num_workers : 2
+    num_workers : 4
 
     tensorboard:
       use_tensorboard: True
-      tensorboard_writer: "/data/ubuntu/data/saved_models/runs/experiment_27"
+      tensorboard_writer: "/data/ubuntu/data/saved_models/runs/experiment_31"
 
-    saved_model : best_model_27_06.pt
-    previous_model : null #/data/ubuntu/data/saved_models/experiment_2/best_model_27_06.pt
+    saved_model : best_model_31_06.pt
+    previous_model : null #/data/ubuntu/data/saved_models/experiment_2/best_model_31_06.pt
 
 submission:
-  model_path : /data/ubuntu/data/saved_models/experiment_27/model0.pt #/data/ubuntu/data/saved_models/experiment_7/model_fold3.pt
-  path_csv : /data/ubuntu/data/saved_models/experiment_27/best_model.csv
+  model_path : /data/ubuntu/data/saved_models/experiment_31/model5.pt #/data/ubuntu/data/saved_models/experiment_7/model_fold3.pt
+  path_csv : /data/ubuntu/data/saved_models/experiment_31/best_model5.csv

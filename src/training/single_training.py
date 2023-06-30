@@ -6,7 +6,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from src.config.settings import CONFIG_PATH, DATA_PATH
-from src.models.evaluation import evaluation, evaluation_tile
+from src.models.evaluation import evaluation, evaluation_tile, evaluation_batch
 from src.models.model import Paper_network
 from src.models.training import train_loop, train_loop_batch
 
@@ -46,7 +46,10 @@ def single_training(
     for epoch in tqdm(range(epochs)):
         running_loss = train_loop(train_loader, model, criterion, optimizer, epoch, device, n=n)
 
-        auc, acc, recall, precision, fig_bag = evaluation(model, validation_loader, device)
+        # auc, acc, recall, precision, fig_bag = evaluation(model, validation_loader, device)
+        auc, acc, recall, precision, fig_bag = evaluation_batch(
+            model=model, loader=validation_loader, device=device, n=n
+        )
 
         if validation_loader_tile is not None:
             print("test", validation_loader_tile)

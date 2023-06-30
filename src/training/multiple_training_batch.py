@@ -31,12 +31,8 @@ if __name__ == "__main__":
     save_path = Path(config.data.training.save_dir)
     save_path.mkdir(exist_ok=True)
 
-    N = 10
     ok = False
-    for i in range(N):
-        # i = 0
-
-        seed = random.randint(0, 2**10)
+    for i in range(config.data.training.number_training):
         save_model_path = save_path / f"model{i}.pt"
 
         df_annotated_bags = pd.read_csv(metadata_file)
@@ -48,7 +44,7 @@ if __name__ == "__main__":
             annotated_bags_id,
             annotated_bags_target,
             test_size=config.data.split,
-            random_state=seed,
+            random_state=None,
             stratify=annotated_bags_target,
         )
 
@@ -59,9 +55,6 @@ if __name__ == "__main__":
 
         id_val_bag_ = [i[:6] for i in id_val_bag if i.split("_")[-1] == "annotated"]
         list_id_tiles = [id_ for id_ in tiles_ID if id_ in id_val_bag_]
-
-        # if not len(list_id_tiles):
-        #    continue
 
         print(len(list_id_tiles))
 
@@ -81,8 +74,8 @@ if __name__ == "__main__":
         )
         # validation_loader = DataLoader(val_ds_tile, batch_size=1, shuffle=False, num_workers=4)
         validation_loader = None
-        # criterion = W_BCEWithLogitsLoss(w_p=w_p, w_n=w_n)
-        criterion = torch.nn.BCELoss()
+        criterion = W_BCEWithLogitsLoss(w_p=w_p, w_n=w_n)
+        # criterion = torch.nn.BCELoss()
 
         single_training_batch(
             train_loader=train_pooling_loader,
