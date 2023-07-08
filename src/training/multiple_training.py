@@ -78,4 +78,5 @@ if __name__ == "__main__":
             config=config,
             save_model_path=save_model_path,
             device=device,
+            use_scheduler=config.data.training.scheduler,
         )

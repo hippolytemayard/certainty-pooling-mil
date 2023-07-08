@@ -151,12 +151,13 @@ def single_training_batch(
 
     n = config.data.training.n_monte_carlo
 
-    best_accuracy, best_auc, best_auc_tile = 0, 0, 0
+    best_accuracy, best_auc, best_auc_tile, best_f1 = 0, 0, 0, 0
 
     for epoch in tqdm(range(epochs)):
         running_loss = train_loop_batch(train_loader, model, criterion, optimizer, epoch, device, n=n)
 
-        auc, acc, recall, precision, fig_bag = evaluation(model, validation_loader, device)
+        # auc, acc, recall, precision, f1, cf_matrix, fig_bag = evaluation_batch(model, validation_loader, device)
+        auc, acc, recall, precision, f1, cf_matrix, fig_bag = evaluation(model, validation_loader, device)
 
         if validation_loader_tile is not None:
             print("test", validation_loader_tile)
@@ -171,6 +172,8 @@ def single_training_batch(
             writer.add_scalar("recall", recall, epoch)
             writer.add_scalar("precision", precision, epoch)
             writer.add_figure("Confusion matrix", fig_bag, epoch)
+            writer.add_scalar("F1", f1, epoch)
+
             if validation_loader_tile is not None:
                 writer.add_scalar("auc_tile", auc_tile, epoch)
                 writer.add_scalar("accuracy_tile", acc_tile, epoch)
@@ -181,15 +184,15 @@ def single_training_batch(
         if use_scheduler:
             scheduler.step()
 
-        if auc >= best_auc:  # and acc >= best_accuracy:
+        if auc >= best_auc and f1 >= best_f1:
             best_auc = auc
-            best_accuracy = acc
+            best_f1 = f1
 
             print("SAVING MODEL AUC")
             if validation_loader_tile is not None:
                 print(f"BEST ACCURACY = {acc}, BEST AUC TILE = {auc_tile} , BEST AUC : {best_auc}")
             else:
-                print(f"BEST ACCURACY = {acc}, BEST AUC : {best_auc}")
+                print(f"BEST ACCURACY = {acc}, BEST AUC : {best_auc}, BEST F1 : {f1}")
 
             torch.save(
                 obj={
@@ -197,7 +200,11 @@ def single_training_batch(
                     "optimizer_state_dict": optimizer.state_dict(),
                     "auc": auc,
                     "acc": acc,
-                    "confusion_matrix": fig_bag,
+                    "recall": recall,
+                    "precision": precision,
+                    "f1": f1,
+                    "confusion_matrix": cf_matrix,
+                    "epoch": epoch,
                 },
                 f=save_model_path,
             )
