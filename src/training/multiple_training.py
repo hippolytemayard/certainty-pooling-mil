@@ -14,7 +14,7 @@ import random
 
 
 if __name__ == "__main__":
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     config = load_yaml(path=CONFIG_PATH)
 
@@ -31,9 +31,6 @@ if __name__ == "__main__":
     save_path.mkdir(exist_ok=True)
 
     for i in range(config.data.training.number_training):
-        # i = 0
-
-        seed = random.randint(0, 2**10)
         save_model_path = save_path / f"model{i}.pt"
 
         df_annotated_bags = pd.read_csv(metadata_file)
@@ -45,14 +42,10 @@ if __name__ == "__main__":
             annotated_bags_id,
             annotated_bags_target,
             test_size=config.data.split,
-            random_state=seed,
             stratify=annotated_bags_target,
         )
         id_val_bag_ = [i[:6] for i in id_val_bag if i.split("_")[-1] == "annotated"]
         list_id_tiles = [id_ for id_ in tiles_ID if id_ in id_val_bag_]
-
-        # if not len(list_id_tiles):
-        #    continue
 
         print(len(list_id_tiles))
 
@@ -78,4 +71,5 @@ if __name__ == "__main__":
             config=config,
             save_model_path=save_model_path,
             device=device,
+            use_scheduler=config.data.training.scheduler,
         )

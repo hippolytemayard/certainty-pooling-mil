@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 from src.models.certainty_pooling import certainty_pooling, certainty_pooling_btach
 
 
-def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tuple[int]:
+def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100, threshold=0.5, epsilon=1.0e-3) -> Tuple[int]:
     """evaluation of the model on the validation set using a Loader.
 
     Parameters
@@ -39,7 +39,7 @@ def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tu
 
         with torch.no_grad():
             inputs_pooling = np.asarray(
-                [certainty_pooling(model, input, n, device, epsilon=1.0e-3) for input in inputs]
+                [certainty_pooling(model, input, n, device, epsilon=epsilon) for input in inputs]
             )
             model.eval()
             inputs = torch.tensor(inputs_pooling).float().cuda()
@@ -59,7 +59,6 @@ def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tu
     fpr, tpr, thresholds = metrics.roc_curve(y_val, predictions)
     auc = metrics.auc(fpr, tpr)
 
-    threshold = 0.5
     predictions[predictions >= threshold] = 1
     predictions[predictions < threshold] = 0
 
@@ -69,6 +68,7 @@ def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tu
     recall = tp / (tp + fn)
     precision = tp / (tp + fp)
     accuracy = (tp + tn) / (tn + fp + fn + tp)
+    f1 = (2 * recall * precision) / (recall + precision)
 
     print(f"\nAUC : {auc} , accuracy : {accuracy} , reccall = {recall} , precision = {precision}\n")
 
@@ -78,10 +78,15 @@ def evaluation(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tu
     plt.figure(figsize=(12, 7))
     fig = sn.heatmap(df_cm, annot=True).get_figure()
 
-    return auc, accuracy, recall, precision, fig
+    return auc, accuracy, recall, precision, f1, cf_matrix, fig
 
 
-def evaluation_tile(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tuple[int]:
+def evaluation_tile(
+    model: nn.Module,
+    loader: DataLoader,
+    device,
+    n: int = 100,
+) -> Tuple[int]:
     """evaluation of the model on the validation set using a Loader.
 
     Parameters
@@ -134,6 +139,7 @@ def evaluation_tile(model: nn.Module, loader: DataLoader, device, n: int = 100) 
     recall = tp / (tp + fn)
     precision = tp / (tp + fp)
     accuracy = (tp + tn) / (tn + fp + fn + tp)
+    f1 = (2 * recall * precision) / (recall + precision)
 
     print(
         f"\nAUC_instance : {auc} , accuracy_instance : {accuracy} , reccall_instance = {recall} , precision_instance = {precision}\n"
@@ -147,7 +153,7 @@ def evaluation_tile(model: nn.Module, loader: DataLoader, device, n: int = 100) 
     return auc, accuracy, recall, precision, fig
 
 
-def evaluation_batch(model: nn.Module, loader: DataLoader, device, n: int = 100) -> Tuple[int]:
+def evaluation_batch(model: nn.Module, loader: DataLoader, device, n: int = 100, epsilon: float = 1.0e-3) -> Tuple[int]:
     """evaluation of the model on the validation set using a Loader.
 
     Parameters
@@ -172,12 +178,12 @@ def evaluation_batch(model: nn.Module, loader: DataLoader, device, n: int = 100)
         inputs, targets = sample
 
         with torch.no_grad():
-
-            pooling_input, pooling_target = certainty_pooling_btach(model=model, batch=sample, T=n, device=device)
-
+            pooling_input, pooling_target = certainty_pooling_btach(
+                model=model, batch=sample, T=n, device=device, epsilon=epsilon
+            )
 
             model.eval()
-            #inputs = torch.tensor(inputs_pooling).float().cuda()
+            # inputs = torch.tensor(inputs_pooling).float().cuda()
             targets = torch.tensor(pooling_target).float().cuda()
 
             outputs = model(pooling_input)
@@ -187,7 +193,6 @@ def evaluation_batch(model: nn.Module, loader: DataLoader, device, n: int = 100)
 
     predictions = np.concatenate(predictions_list).ravel()
     y_val = np.concatenate(target_list).ravel()
-
 
     fpr, tpr, thresholds = metrics.roc_curve(y_val, predictions)
     auc = metrics.auc(fpr, tpr)
@@ -202,6 +207,7 @@ def evaluation_batch(model: nn.Module, loader: DataLoader, device, n: int = 100)
     recall = tp / (tp + fn)
     precision = tp / (tp + fp)
     accuracy = (tp + tn) / (tn + fp + fn + tp)
+    f1 = (2 * recall * precision) / (recall + precision)
 
     print(f"\nAUC : {auc} , accuracy : {accuracy} , reccall = {recall} , precision = {precision}\n")
 
@@ -211,4 +217,4 @@ def evaluation_batch(model: nn.Module, loader: DataLoader, device, n: int = 100)
     plt.figure(figsize=(12, 7))
     fig = sn.heatmap(df_cm, annot=True).get_figure()
 
-    return auc, accuracy, recall, precision, fig
+    return auc, accuracy, recall, precision, f1, cf_matrix, fig
