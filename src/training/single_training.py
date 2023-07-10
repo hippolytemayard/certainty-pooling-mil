@@ -169,7 +169,7 @@ def single_training_batch(
         if use_scheduler:
             scheduler.step()
 
-        if auc >= best_auc and f1 >= best_f1:
+        if f1 >= best_f1:  # auc >= best_auc and
             best_auc = auc
             best_f1 = f1
 
